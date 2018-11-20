@@ -26,6 +26,7 @@ var (
 )
 
 // max_lines = 0 will disable file output, < 0 will disable all output
+// Also, no directory means disable output. That way its set by flags without adding a maxlines flag.
 func Init(log_dir string, file_prefix string, max_lines int, use_color bool) {
     log_DIR = log_dir
     file_PREFIX = file_prefix
@@ -54,20 +55,22 @@ func newLine() { // when I think of new line, I think of \n. Maybe \033[0m. This
     lines++
     if lines >= max_LINES {
         lines = 0
-        if temp_file, err := ioutil.TempFile(log_DIR, file_PREFIX); err != nil {
-            cur_file = ""
-            Errorf("Could not create log file: "+err.Error())
-        } else {
-            defer temp_file.Close()
-            cur_file = temp_file.Name()
+        if log_DIR != "" {
+					if temp_file, err := ioutil.TempFile(log_DIR, file_PREFIX); err != nil {
+	            cur_file = ""
+	            Errorf("Could not create log file: "+err.Error())
+	        } else {
+	            defer temp_file.Close()
+	            cur_file = temp_file.Name()
 
-            warning_logger.SetOutput(os.Stdout)
-            if use_COLOR {
-                warning_logger.Output(1, "New log file: "+cur_file+"\033[0m")
-            } else {
+	            warning_logger.SetOutput(os.Stdout)
+	            if use_COLOR {
+	                warning_logger.Output(1, "New log file: "+cur_file+"\033[0m")
+	            } else {
                 warning_logger.Output(1, "New log file: "+cur_file)
-            }
-        }
+	            }
+			    }
+				}
     }
 }
 
